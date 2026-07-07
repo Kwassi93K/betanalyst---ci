@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6366f1">
+<meta name="description" content="Agent IA d'analyse football spécialisé Betclic Côte d'Ivoire — Cotes, Value Bets, Pronostics">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BetAnalyst CI">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Open Graph -->
+<meta property="og:title" content="BetAnalyst CI — Agent IA Paris Sportifs">
+<meta property="og:description" content="Analyse professionnelle des cotes Betclic Côte d'Ivoire par IA">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/icons/icon-512.png">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96.png">
+
+<title>BetAnalyst CI — Agent IA Paris Sportifs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#09090f;--bg2:#0e0e1a;--bg3:#13131f;--card:#0f0f1c;
+  --border:rgba(99,102,241,.2);--border2:rgba(99,102,241,.08);
+  --indigo:#6366f1;--indigo-g:rgba(99,102,241,.15);--indigo-gl:rgba(99,102,241,.35);
+  --gold:#f59e0b;--gold-g:rgba(245,158,11,.12);
+  --green:#10b981;--green-g:rgba(16,185,129,.12);
+  --red:#ef4444;--red-g:rgba(239,68,68,.12);
+  --muted:#6b7280;--text:#e5e7f0;--text2:#9ca3af;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top));
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:38px;height:38px;background:var(--indigo);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px var(--indigo-gl);flex-shrink:0}
+.brand-name{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;color:var(--indigo);letter-spacing:.04em}
+.brand-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.header-badges{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:4px 9px;border-radius:4px;letter-spacing:.06em}
+.badge.live{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);color:var(--red)}
+.badge.ai{background:var(--indigo-g);border:1px solid var(--border);color:var(--indigo)}
+.badge.betclic{background:var(--gold-g);border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* ── PWA BANNER ── */
+#pwa-banner{
+  display:none;background:var(--indigo-g);border-bottom:1px solid var(--border);
+  padding:8px 16px;align-items:center;gap:10px;flex-shrink:0;
+}
+#pwa-banner.show{display:flex}
+#pwa-banner p{font-size:12px;color:var(--text2);flex:1}
+#pwa-banner strong{color:var(--indigo)}
+.btn-pwa-install{background:var(--indigo);color:#fff;border:none;border-radius:5px;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+.btn-pwa-dismiss{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--card);border:1px solid var(--border);color:var(--text);
+  font-size:13px;padding:10px 18px;border-radius:8px;
+  opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;
+  box-shadow:0 4px 24px rgba(0,0,0,.4);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── LAYOUT ── */
+.main{flex:1;display:flex;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--bg2)}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.s-sec{padding:14px 16px;border-bottom:1px solid var(--border2)}
+.s-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.s-lbl::after{content:'';flex:1;height:1px;background:var(--border2)}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+label.fl{font-size:11px;color:var(--text2);font-weight:500}
+input.fi,select.fi,textarea.fi{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:7px 10px;border-radius:5px;outline:none;width:100%;transition:border-color .2s}
+input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--indigo)}
+input.fi::placeholder,textarea.fi::placeholder,select.fi:invalid{color:var(--muted)}
+select.fi option{background:var(--bg3)}
+textarea.fi{resize:none;min-height:60px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:6px}
+.vsep{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--muted);text-align:center;padding-bottom:8px}
+.odds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+.oc{background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:8px 6px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.oc:hover{border-color:var(--indigo);background:var(--indigo-g)}
+.oc.active{border-color:var(--gold);background:var(--gold-g)}
+.oc-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.oc-val{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;color:var(--gold);margin-top:2px}
+.oir{display:flex;gap:5px;align-items:center;margin-top:6px}
+.oir label{font-size:11px;color:var(--text2);white-space:nowrap}
+.btn-primary{width:100%;background:var(--indigo);color:#fff;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:700;padding:10px;cursor:pointer;transition:box-shadow .2s,opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary:hover{box-shadow:0 0 20px var(--indigo-gl)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.qg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.qb{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:500;padding:7px 8px;border-radius:5px;cursor:pointer;text-align:left;transition:border-color .2s,color .2s,background .2s;line-height:1.35}
+.qb:hover{border-color:var(--indigo);color:var(--text);background:var(--indigo-g)}
+.qi{font-size:13px;display:block;margin-bottom:2px}
+.src-list{display:flex;flex-direction:column;gap:5px}
+.src-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px}
+.src-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.src-dot.g{background:var(--green)}.src-dot.y{background:var(--gold)}
+.src-name{font-size:11px;font-weight:500;flex:1}
+.src-type{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+
+/* ── CHAT ── */
+.chat-zone{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:4px}
+#chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* Welcome */
+.wscreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;gap:16px}
+.wlogo{font-size:52px;filter:drop-shadow(0 0 24px var(--indigo-gl))}
+.wtitle{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:var(--indigo)}
+.wdesc{font-size:13px;color:var(--text2);max-width:440px;line-height:1.65}
+.wsteps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:500px;margin-top:8px}
+.step{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:14px 12px;text-align:center}
+.step-n{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--indigo);margin-bottom:6px}
+.step-t{font-size:12px;font-weight:600;margin-bottom:4px}
+.step-d{font-size:11px;color:var(--text2);line-height:1.4}
+
+/* Messages */
+.msg{display:flex;gap:10px;max-width:880px}
+.msg.user{flex-direction:row-reverse;margin-left:auto}
+.av{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.av.ai{background:var(--indigo);box-shadow:0 0 12px var(--indigo-gl)}
+.av.user{background:var(--bg3);border:1px solid var(--border)}
+.bubble{padding:12px 15px;border-radius:10px;font-size:13px;line-height:1.7;max-width:calc(100% - 42px)}
+.msg.ai .bubble{background:var(--card);border:1px solid var(--border);border-top-left-radius:3px}
+.msg.user .bubble{background:var(--indigo-g);border:1px solid rgba(99,102,241,.25);border-top-right-radius:3px}
+.bubble .sh{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--indigo);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 6px;display:flex;align-items:center;gap:6px}
+.bubble .sh:first-child{margin-top:0}
+.bubble .sh::before{content:'▸';color:var(--gold)}
+.bubble p{margin-bottom:8px}
+.bubble p:last-child{margin-bottom:0}
+.bubble strong{color:var(--gold);font-weight:600}
+.bubble em{color:var(--green);font-style:normal}
+.bubble ul{padding-left:16px;margin-bottom:8px}
+.bubble li{margin-bottom:4px}
+.bubble .vbox{margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--indigo-g);border-left:3px solid var(--indigo)}
+.bubble .vbox.win{background:var(--green-g);border-left-color:var(--green)}
+.bubble .vbox.risk{background:var(--red-g);border-left-color:var(--red)}
+.bubble .or{display:inline-block;background:var(--gold-g);border:1px solid rgba(245,158,11,.25);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:1px 7px;border-radius:3px;font-weight:700;margin:0 2px}
+.bubble .tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;margin:1px 2px}
+.bubble .tag.g{background:var(--green-g);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.bubble .tag.r{background:var(--red-g);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.bubble .tag.b{background:var(--indigo-g);color:var(--indigo);border:1px solid var(--border)}
+.bubble .tag.y{background:var(--gold-g);color:var(--gold);border:1px solid rgba(245,158,11,.25)}
+.bubble .cbar{display:flex;align-items:center;gap:10px;margin:6px 0}
+.bubble .ctrack{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bubble .cfill{height:100%;border-radius:3px;transition:width 1s;width:0%}
+.bubble .clbl{font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--gold);min-width:32px}
+.typing-dots{display:flex;gap:5px;padding:6px 4px}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--indigo);opacity:.4;animation:bounce 1.2s ease-in-out infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+
+/* Input bar */
+.ibar{padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+#userInput{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:10px 13px;border-radius:7px;outline:none;resize:none;min-height:42px;max-height:110px;line-height:1.5;transition:border-color .2s}
+#userInput:focus{border-color:var(--indigo)}
+#userInput::placeholder{color:var(--muted)}
+.bsend{width:42px;height:42px;background:var(--indigo);border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:box-shadow .2s,opacity .2s;flex-shrink:0;color:#fff}
+.bsend:hover{box-shadow:0 0 16px var(--indigo-gl)}
+.bsend:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+
+/* Mobile sidebar toggle */
+.mob-toggle{display:none;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;font-family:'IBM Plex Sans',sans-serif}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+.overlay.show{display:block}
+@media(max-width:700px){
+  .mob-toggle{display:block}
+  .sidebar{position:fixed;left:-320px;top:0;bottom:0;z-index:101;width:300px;transition:left .3s;box-shadow:4px 0 24px rgba(0,0,0,.5)}
+  .sidebar.open{left:0}
+  .wsteps{grid-template-columns:1fr}
+  .header-badges .badge.betclic{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">📊</div>
+    <div>
+      <div class="brand-name">BETANALYST CI</div>
+      <div class="brand-sub">Agent IA — Betclic Côte d'Ivoire</div>
+    </div>
+  </div>
+  <div class="header-badges">
+    <button class="mob-toggle" onclick="toggleSidebar()">⚙️ Paramètres</button>
+    <span class="badge live"><div class="pulse"></div>EN LIGNE</span>
+    <span class="badge ai">🤖 IA Claude</span>
+    <span class="badge betclic">🎯 Betclic CI</span>
+  </div>
+</header>
+
+<!-- Banner installation PWA -->
+<div id="pwa-banner">
+  <p>📲 <strong>Installer BetAnalyst CI</strong> sur votre téléphone pour un accès rapide depuis l'écran d'accueil</p>
+  <button class="btn-pwa-install" id="pwa-install-btn">Installer</button>
+  <button class="btn-pwa-dismiss" onclick="dismissPWA()">✕</button>
+</div>
+
+<!-- Overlay mobile -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+
+    <div class="s-sec">
+      <div class="s-lbl">📋 Match</div>
+      <div class="fg">
+        <label class="fl">Compétition</label>
+        <select class="fi" id="competition">
+          <option value="">— Sélectionner —</option>
+          <optgroup label="🇨🇮 Côte d'Ivoire">
+            <option>Ligue 1 Ivoirienne</option><option>Coupe de CI</option>
+          </optgroup>
+          <optgroup label="🌍 Afrique">
+            <option>CAN 2025</option><option>CAF Champions League</option>
+            <option>CAF Confederation Cup</option><option>CHAN</option>
+            <option>Éliminatoires CAN</option>
+          </optgroup>
+          <optgroup label="🇪🇺 Europe">
+            <option>Champions League</option><option>Europa League</option>
+            <option>Conference League</option><option>Premier League</option>
+            <option>La Liga</option><option>Bundesliga</option>
+            <option>Serie A</option><option>Ligue 1</option>
+          </optgroup>
+          <optgroup label="🌐 Monde">
+            <option>Coupe du Monde FIFA</option><option>Éliminatoires Coupe du Monde</option>
+            <option>Autre compétition</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="row2" style="margin-bottom:8px">
+        <div class="fg" style="margin:0"><label class="fl">Domicile</label><input class="fi" type="text" id="team1" placeholder="ASEC Mimosas"/></div>
+        <div class="vsep">vs</div>
+        <div class="fg" style="margin:0"><label class="fl">Extérieur</label><input class="fi" type="text" id="team2" placeholder="Africa Sports"/></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Date</label>
+        <input class="fi" type="date" id="matchDate"/>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-lbl">💰 Cotes Betclic CI</div>
+      <div class="odds-grid">
+        <div class="oc" id="c-1" onclick="selOdds('1')"><div class="oc-lbl">1 Dom.</div><div class="oc-val" id="ov-1">—</div></div>
+        <div class="oc" id="c-x" onclick="selOdds('X')"><div class="oc-lbl">X Nul</div><div class="oc-val" id="ov-x">—</div></div>
+        <div class="oc" id="c-2" onclick="selOdds('2')"><div class="oc-lbl">2 Ext.</div><div class="oc-val" id="ov-2">—</div></div>
+      </div>
+      <div class="oir">
+        <label>1:</label><input class="fi" type="number" step="0.01" min="1" id="odd1" placeholder="1.85" oninput="updOdds()" style="width:64px;padding:5px 7px">
+        <label>X:</label><input class="fi" type="number" step="0.01" min="1" id="oddX" placeholder="3.40" oninput="updOdds()" style="width:64px;padding:5px 7px">
+        <label>2:</label><input class="fi" type="number" step="0.01" min="1" id="odd2" placeholder="4.20" oninput="updOdds()" style="width:64px;padding:5px 7px">
+      </div>
+      <div class="fg" style="margin-top:10px">
+        <label class="fl">Autres marchés (BTTS, Over/Under…)</label>
+        <textarea class="fi" id="otherMarkets" placeholder="BTTS Oui 1.75 / Non 2.00&#10;+2.5 buts 2.10 / -2.5 buts 1.68"></textarea>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-lbl">📝 Contexte</div>
+      <div class="fg">
+        <label class="fl">Blessés, forme, motivation…</label>
+        <textarea class="fi" id="context" placeholder="Ex: Gardien blessé côté domicile. Équipe ext. 4 matchs sans défaite…" style="min-height:70px"></textarea>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <button class="btn-primary" id="btnAnalyse" onclick="launchAnalysis()">⚡ Analyser ce match</button>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-lbl">🚀 Analyses rapides</div>
+      <div class="qg">
+        <button class="qb" onclick="quickP('value')"><span class="qi">📈</span>Value Bet ?</button>
+        <button class="qb" onclick="quickP('btts')"><span class="qi">⚽</span>Analyse BTTS</button>
+        <button class="qb" onclick="quickP('goals')"><span class="qi">🎯</span>Over/Under</button>
+        <button class="qb" onclick="quickP('combined')"><span class="qi">🎰</span>Pari combiné</button>
+        <button class="qb" onclick="quickP('history')"><span class="qi">📜</span>Hist. cotes</button>
+        <button class="qb" onclick="quickP('risk')"><span class="qi">⚠️</span>Niveau risque</button>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <div class="s-lbl">🔗 Sources</div>
+      <div class="src-list">
+        <div class="src-item"><div class="src-dot g"></div><span class="src-name">football-data.co.uk</span><span class="src-type">CSV</span></div>
+        <div class="src-item"><div class="src-dot g"></div><span class="src-name">API-Football</span><span class="src-type">API</span></div>
+        <div class="src-item"><div class="src-dot g"></div><span class="src-name">The Odds API</span><span class="src-type">API</span></div>
+        <div class="src-item"><div class="src-dot g"></div><span class="src-name">Betclic.ci</span><span class="src-type">BOOKMAKER</span></div>
+        <div class="src-item"><div class="src-dot g"></div><span class="src-name">SofaScore / Flashscore</span><span class="src-type">STATS</span></div>
+        <div class="src-item"><div class="src-dot g"></div><span class="src-name">Soccerway / RSSSF</span><span class="src-type">ARCHIVE</span></div>
+        <div class="src-item"><div class="src-dot y"></div><span class="src-name">OddsPapi</span><span class="src-type">API</span></div>
+        <div class="src-item"><div class="src-dot y"></div><span class="src-name">Infogol / WhoScored</span><span class="src-type">xG</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT ZONE -->
+  <div class="chat-zone">
+    <div id="chat">
+      <div class="wscreen" id="wscreen">
+        <div class="wlogo">📊</div>
+        <div class="wtitle">BETANALYST CI — PRÊT</div>
+        <div class="wdesc">Agent IA spécialisé analyse cotes Betclic Côte d'Ivoire.<br>Croise 8 sources de données, détecte les value bets, produit un verdict argumenté avec niveau de confiance.</div>
+        <div class="wsteps">
+          <div class="step"><div class="step-n">ÉTAPE 01</div><div class="step-t">Saisir le match</div><div class="step-d">Équipes, compétition et cotes Betclic dans le panneau</div></div>
+          <div class="step"><div class="step-n">ÉTAPE 02</div><div class="step-t">Lancer l'analyse</div><div class="step-d">L'agent croise historiques de cotes et données des 8 sources</div></div>
+          <div class="step"><div class="step-n">ÉTAPE 03</div><div class="step-t">Obtenir le verdict</div><div class="step-d">Value bet, confiance, scénarios et recommandation de mise</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ibar">
+      <textarea id="userInput" placeholder="Question sur ce match, approfondissement d'analyse…" rows="1" onkeydown="hKey(event)" oninput="aResize(this)"></textarea>
+      <button class="bsend" id="btnSend" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
+const SYS = `Tu es BetAnalyst CI, un agent IA expert en analyse de paris sportifs football, spécialisé sur le bookmaker Betclic Côte d'Ivoire.
+
+MÉTHODOLOGIE EN 5 AXES :
+
+1. ANALYSE DES CÔTES BETCLIC CI
+- Probabilité implicite de chaque côte (prob. = 1/côte × 100%)
+- Marge du bookmaker (overround = somme des prob. implicites - 100%)
+- Comparaison aux côtes historiques typiques pour matchs similaires
+- Détection VALUE BET (EV positif = côte > valeur réelle)
+
+2. HISTORIQUE DES CÔTES SIMILAIRES
+- Fourchettes typiques Betclic CI / bookmakers africains pour équipes de même niveau
+- Statistiques résultats par fourchette de côte (ex: côte 1.80-2.00 sur favoris CAN → 58% succès)
+- Drift de côtes (ouverture vs fermeture) comme signal market
+
+3. SOURCES CROISÉES (8 références)
+• football-data.co.uk — CSV résultats & côtes historiques
+• API-Football — stats, classements, effectifs, forme
+• The Odds API / OddsPapi — historique multi-bookmakers
+• Betclic.ci — côtes officielles, marchés
+• SofaScore / Flashscore — forme récente, stats live
+• Soccerway / RSSSF — archives africaines & mondiales
+• Infogol / WhoScored — xG, analyse tactique
+
+4. ANALYSE PAR MARCHÉ
+Chaque marché (1X2, BTTS, Over/Under, HC asiatique) :
+- Probabilité réelle estimée vs prob. implicite Betclic
+- Expected Value : EV = (prob_réelle × côte) - 1
+- Verdict : VALUE BET si EV > 0, PASS si EV < -0.05
+
+5. VERDICT FINAL
+- Recommandation principale + niveau de confiance (0-100%)
+- Mise suggérée selon critère de Kelly fractionné (Kelly/4 pour prudence)
+- Scénarios alternatifs et facteurs de risque
+
+RÈGLES :
+✅ Toujours quantifier : probabilités %, EV, confiance
+✅ Mentionner les sources utilisées
+✅ Terminologie exacte : CLV, EV, overround, edge, AH, BTTS, xG
+✅ Adapter au contexte ivoirien et africain
+⚠️ Rappeler que les paris comportent des risques financiers
+⚠️ Ne jamais garantir un résultat
+
+FORMAT : Sections en MAJUSCULES, réponses structurées. Langue : FRANÇAIS.`;
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let hist = [], loading = false, deferredPrompt = null;
+
+// ── PWA ───────────────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(r => console.log('SW enregistré:', r.scope))
+      .catch(e => console.log('SW erreur:', e));
+  });
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('pwa-dismissed')) {
+    document.getElementById('pwa-banner').classList.add('show');
+  }
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') showToast('✅ BetAnalyst CI installé sur votre téléphone !');
+  deferredPrompt = null;
+  document.getElementById('pwa-banner').classList.remove('show');
+});
+
+function dismissPWA() {
+  localStorage.setItem('pwa-dismissed', '1');
+  document.getElementById('pwa-banner').classList.remove('show');
+}
+
+window.addEventListener('appinstalled', () => showToast('📲 Application installée !'));
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+
+function showToast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function updOdds() {
+  [['odd1','ov-1'],['oddX','ov-x'],['odd2','ov-2']].forEach(([inp,disp]) => {
+    const v = document.getElementById(inp).value;
+    document.getElementById(disp).textContent = v ? parseFloat(v).toFixed(2) : '—';
+  });
+}
+
+function selOdds(type) {
+  ['1','X','2'].forEach(k => {
+    document.getElementById(`c-${k.toLowerCase()}`).classList.toggle('active', k===type);
+  });
+}
+
+// ── MATCH CONTEXT ─────────────────────────────────────────────────────────────
+function buildCtx() {
+  const t1=document.getElementById('team1').value.trim();
+  const t2=document.getElementById('team2').value.trim();
+  if (!t1&&!t2) return '';
+  const comp=document.getElementById('competition').value;
+  const date=document.getElementById('matchDate').value;
+  const o1=document.getElementById('odd1').value;
+  const oX=document.getElementById('oddX').value;
+  const o2=document.getElementById('odd2').value;
+  const other=document.getElementById('otherMarkets').value.trim();
+  const ctx=document.getElementById('context').value.trim();
+  let b=`\n═══ CONTEXTE MATCH ═══\nCompétition: ${comp||'Non spécifiée'}\nMatch: ${t1||'Équipe A'} vs ${t2||'Équipe B'}\n`;
+  if(date) b+=`Date: ${date}\n`;
+  if(o1||oX||o2){
+    b+=`\nCOTES BETCLIC CI:\n`;
+    if(o1) b+=`  • 1 (${t1||'Dom.'}): ${o1} → prob. implicite ${(1/parseFloat(o1)*100).toFixed(1)}%\n`;
+    if(oX) b+=`  • X (Nul): ${oX} → prob. implicite ${(1/parseFloat(oX)*100).toFixed(1)}%\n`;
+    if(o2) b+=`  • 2 (${t2||'Ext.'}): ${o2} → prob. implicite ${(1/parseFloat(o2)*100).toFixed(1)}%\n`;
+    if(o1&&oX&&o2) b+=`  • Overround: ${((1/parseFloat(o1)+1/parseFloat(oX)+1/parseFloat(o2)-1)*100).toFixed(2)}%\n`;
+  }
+  if(other) b+=`\nAUTRES MARCHÉS:\n${other}\n`;
+  if(ctx) b+=`\nCONTEXTE:\n${ctx}\n`;
+  b+=`═══════════════════════\n`;
+  return b;
+}
+
+// ── LAUNCH ────────────────────────────────────────────────────────────────────
+function launchAnalysis() {
+  const t1=document.getElementById('team1').value.trim();
+  const t2=document.getElementById('team2').value.trim();
+  if(!t1&&!t2){showToast('⚠️ Renseignez les deux équipes');return;}
+  const ctx=buildCtx();
+  const p=`${ctx}\nLance une analyse complète : décodage des côtes, détection value bet, historique côtes similaires, croisement des 8 sources, analyse de chaque marché, niveau de confiance et verdict final avec recommandation de mise.`;
+  sendAPI(p, `⚡ Analyse : ${t1} vs ${t2}`);
+  // Fermer sidebar sur mobile
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── QUICK PROMPTS ─────────────────────────────────────────────────────────────
+const QP = {
+  value:   "Y a-t-il une VALUE BET dans ces côtes ? Calcule l'EV pour chaque issue et identifie l'opportunité la plus intéressante.",
+  btts:    "Analyse en profondeur le marché BTTS. Statistiques des deux équipes, tendances récentes, et valeur de la côte BTTS Oui proposée.",
+  goals:   "Analyse les marchés Over/Under buts (1.5, 2.5, 3.5). Quelle ligne offre la meilleure valeur sur Betclic CI ?",
+  combined:"Propose 2-3 sélections pour un pari combiné logique avec justification par les données. Cote combinée estimée.",
+  history: "Historique des côtes typiques pour des matchs similaires (même niveau, même compétition). Quel résultat ont-ils donné en moyenne ?",
+  risk:    "Évalue le niveau de risque global : facteurs d'incertitude, matchs de coupe, blessés potentiels, motivation des équipes, conditions terrain."
+};
+
+function quickP(type) {
+  const ctx=buildCtx();
+  sendAPI(ctx ? `${ctx}\n${QP[type]}` : QP[type], QP[type].substring(0,55)+'…');
+}
+
+function sendMsg() {
+  const inp=document.getElementById('userInput');
+  const txt=inp.value.trim();
+  if(!txt||loading) return;
+  inp.value=''; aResize(inp);
+  const ctx=buildCtx();
+  sendAPI(ctx?`${ctx}\n${txt}`:txt, txt);
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function sendAPI(apiText, displayText) {
+  if(loading) return;
+  loading=true;
+  const chatEl=document.getElementById('chat');
+  const ws=document.getElementById('wscreen');
+  if(ws) ws.remove();
+  document.getElementById('btnSend').disabled=true;
+  document.getElementById('btnAnalyse').disabled=true;
+  addMsg('user', displayText||apiText);
+  hist.push({role:'user',content:apiText});
+  const tid='t-'+Date.now();
+  const tel=document.createElement('div');
+  tel.className='msg ai'; tel.id=tid;
+  tel.innerHTML=`<div class="av ai">📊</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  chatEl.appendChild(tel);
+  chatEl.scrollTop=chatEl.scrollHeight;
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SYS,messages:hist})
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Erreur : réponse vide.';
+    document.getElementById(tid)?.remove();
+    hist.push({role:'assistant',content:reply});
+    addMsg('ai', reply);
+  } catch(e) {
+    document.getElementById(tid)?.remove();
+    addMsg('ai','⚠️ Erreur de connexion. Vérifiez votre réseau internet.');
+  }
+  loading=false;
+  document.getElementById('btnSend').disabled=false;
+  document.getElementById('btnAnalyse').disabled=false;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function addMsg(role, text) {
+  const chatEl=document.getElementById('chat');
+  const div=document.createElement('div');
+  div.className=`msg ${role}`;
+  const av=role==='ai'?`<div class="av ai">📊</div>`:`<div class="av user">👤</div>`;
+  const content=role==='ai'?renderAI(text):esc(text);
+  div.innerHTML=`${role==='ai'?av:''}<div class="bubble">${content}</div>${role==='user'?av:''}`;
+  chatEl.appendChild(div);
+  chatEl.scrollTop=chatEl.scrollHeight;
+  div.querySelectorAll('.cfill[data-pct]').forEach(el=>{
+    setTimeout(()=>{el.style.width=el.dataset.pct+'%'},100);
+  });
+}
+
+function renderAI(text) {
+  let h=esc(text);
+  h=h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  h=h.replace(/^([A-ZÀÂÄÉÈÊËÎÏÔÙÛÜ0-9 &\/\-\'\:\.\(\)]{5,})$/gm,(m,g)=>{
+    const cm=g.match(/CONFIANCE[^\d]*(\d+)/i)||g.match(/(\d+)\s*%/);
+    if(cm){
+      const pct=parseInt(cm[1]);
+      const col=pct>=70?'#10b981':pct>=50?'#f59e0b':'#ef4444';
+      return `<div class="sh">${g}</div><div class="cbar"><div class="ctrack"><div class="cfill" data-pct="${pct}" style="background:${col}"></div></div><span class="clbl">${pct}%</span></div>`;
+    }
+    return `<div class="sh">${g}</div>`;
+  });
+  h=h.replace(/\b(\d+\.\d{2})\b/g,'<span class="or">$1</span>');
+  h=h.replace(/VALUE BET/gi,'<span class="tag g">VALUE BET</span>');
+  h=h.replace(/\bPASS\b/g,'<span class="tag r">PASS</span>');
+  h=h.replace(/\bBTTS\b/g,'<span class="tag b">BTTS</span>');
+  h=h.replace(/✅\s*/g,'<span class="tag g">✅</span> ');
+  h=h.replace(/❌\s*/g,'<span class="tag r">❌</span> ');
+  h=h.replace(/⚠️\s*/g,'<span class="tag y">⚠️</span> ');
+  h=h.replace(/^[-•·]\s(.+)$/gm,'<li>$1</li>');
+  h=h.replace(/(<li>.*?<\/li>\n?)+/gs,m=>`<ul>${m}</ul>`);
+  return h.split('\n').map(l=>{
+    l=l.trim();
+    if(!l) return '';
+    if(/^<(div|ul|li)/.test(l)) return l;
+    return `<p>${l}</p>`;
+  }).join('');
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function hKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+function aResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px'}
+
+// Init date
+document.getElementById('matchDate').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
